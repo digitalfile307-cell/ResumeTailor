@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>ResumeTailor</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gray-100">
+  <nav class="bg-white p-4 flex justify-between shadow">
+    <h1 class="font-bold text-blue-600 text-xl">ResumeTailor</h1>
+    <div class="space-x-4">
+      <a href="#" class="hover:text-blue-500">About</a>
+      <a href="#" class="hover:text-blue-500">Help</a>
+    </div>
+  </nav>
+
+  <div class="max-w-md mx-auto mt-10 p-6 bg-white rounded shadow">
+    <h2 class="text-2xl font-bold mb-4">Optimize Your Resume</h2>
+    
+    <div class="mb-6">
+      <label class="block mb-2">Upload Resume (PDF/DOCX)</label>
+      <input type="file" id="resumeUpload" class="w-full p-2 border rounded">
+    </div>
+    
+    <div class="mb-6">
+      <label class="block mb-2">Job Description URL</label>
+      <input type="text" id="jobUrl" placeholder="https://example.com/job" class="w-full p-2 border rounded">
+    </div>
+    
+    <button onclick="processResume()" class="bg-blue-500 text-white p-3 rounded w-full">
+      Generate Tailored Resume
+    </button>
+    
+    <div id="result" class="mt-6 hidden">
+      <h3 class="text-lg font-bold mb-2">Your Optimized Resume:</h3>
+      <a id="downloadLink" class="text-blue-500 underline">Download PDF</a>
+    </div>
+  </div>
+
+  <script>
+    async function processResume() {
+      const fileInput = document.getElementById('resumeUpload');
+      const jobUrl = document.getElementById('jobUrl').value;
+      const file = fileInput.files[0];
+      
+      if(!file) {
+        alert("Please upload a resume");
+        return;
+      }
+
+      try {
+        // Get the backend URL from our server
+        const response = await fetch('/get-backend-url');
+        const { backendUrl } = await response.json();
+        
+        // Send file to backend
+        const formData = new FormData();
+        formData.append('resume', file);
+        formData.append('jobUrl', jobUrl);
+
+        const processRes = await fetch(`${backendUrl}/process`, {
+          method: 'POST',
+          body: formData
+        });
+        
+        const result = await processRes.json();
+        
+        // Show download link
+        document.getElementById('downloadLink').href = result.pdfUrl;
+        document.getElementById('result').classList.remove('hidden');
+      } catch (error) {
+        alert("Error: " + error.message);
+      }
+    }
+  </script>
+</body>
+  </html>
